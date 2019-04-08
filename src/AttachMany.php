@@ -58,8 +58,6 @@ class AttachMany extends Field
                         \json_decode($request->$attribute, true)
                     );
                 });
-
-                unset($request->$attribute);
             }
         });
     }
