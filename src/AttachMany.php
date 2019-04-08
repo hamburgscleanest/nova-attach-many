@@ -11,6 +11,7 @@ use Laravel\Nova\Fields\ResourceRelationshipGuesser;
 
 class AttachMany extends Field
 {
+
     use Authorizable;
 
     public $height = '300px';
@@ -29,7 +30,13 @@ class AttachMany extends Field
 
     public $component = 'nova-attach-many';
 
-    public function __construct($name, $attribute = null, $resource = null)
+    /**
+     * AttachMany constructor.
+     * @param string $name
+     * @param string $attribute
+     * @param string $resource
+     */
+    public function __construct(string $name, string $attribute = null, string $resource = null)
     {
         parent::__construct($name, $attribute);
 
@@ -41,11 +48,14 @@ class AttachMany extends Field
         $this->resourceName = $resource::uriKey();
         $this->manyToManyRelationship = $this->attribute;
 
-        $this->fillUsing(function($request, $model, $attribute, $requestAttribute) use($resource) {
-            if(is_subclass_of($model, 'Illuminate\Database\Eloquent\Model')) {
-                $model::saved(function($model) use($attribute, $request) {
+        $this->fillUsing(static function($request, $model, $attribute)
+        {
+            if ($model instanceof \Illuminate\Database\Eloquent\Model)
+            {
+                $model::saved(static function($model) use ($attribute, $request)
+                {
                     $model->$attribute()->sync(
-                        json_decode($request->$attribute, true)
+                        \json_decode($request->$attribute, true)
                     );
                 });
 
@@ -54,70 +64,103 @@ class AttachMany extends Field
         });
     }
 
+    /**
+     * @param array|callable|string $rules
+     * @return $this|Field
+     */
     public function rules($rules)
     {
         $rules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
 
-        $this->rules = [ new ArrayRules($rules) ];
+        $this->rules = [new ArrayRules($rules)];
 
         return $this;
     }
 
-    public function resolve($resource, $attribute = null)
+    /**
+     * @param string $resource
+     * @param string $attribute
+     */
+    public function resolve($resource, $attribute = null) : void
     {
         $this->withMeta([
-            'height' => $this->height,
-            'fullWidth' => $this->fullWidth,
-            'showCounts' => $this->showCounts,
+            'height'      => $this->height,
+            'fullWidth'   => $this->fullWidth,
+            'showCounts'  => $this->showCounts,
             'showPreview' => $this->showPreview,
             'showToolbar' => $this->showToolbar
         ]);
     }
 
-    public function authorize(Request $request)
+    /**
+     * @param Request $request
+     * @return bool
+     */
+    public function authorize(Request $request) : bool
     {
-        if(! $this->resourceClass::authorizable()) {
+        if (!$this->resourceClass::authorizable())
+        {
             return true;
         }
 
-        if(! isset($request->resource)) {
+        if (!isset($request->resource))
+        {
             return false;
         }
 
-        return call_user_func([ $this->resourceClass, 'authorizedToViewAny'], $request)
-            && $request->newResource()->authorizedToAttachAny($request, $this->resourceClass::newModel())
-            && parent::authorize($request);
+        return \call_user_func([$this->resourceClass, 'authorizedToViewAny'], $request)
+               && $request->newResource()->authorizedToAttachAny($request, $this->resourceClass::newModel())
+               && parent::authorize($request);
     }
 
-    public function height($height)
+    /**
+     * @param $height
+     * @return $this
+     */
+    public function height($height) : self
     {
         $this->height = $height;
 
         return $this;
     }
 
-    public function fullWidth($fullWidth=true)
+    /**
+     * @param bool $fullWidth
+     * @return $this
+     */
+    public function fullWidth($fullWidth = true) : self
     {
         $this->fullWidth = $fullWidth;
 
         return $this;
     }
 
-    public function hideToolbar()
+    /**
+     * @return $this
+     */
+    public function hideToolbar() : self
     {
         $this->showToolbar = false;
 
         return $this;
     }
 
-    public function showCounts($showCounts=true)
+    /**
+     * @param bool $showCounts
+     * @return $this
+     */
+    public function showCounts($showCounts = true) : self
     {
         $this->showCounts = $showCounts;
 
         return $this;
     }
 
-    public function showPreview($showPreview=true)
+    /**
+     * @param bool $showPreview
+     * @return $this
+     */
+    public function showPreview($showPreview = true) : self
     {
         $this->showPreview = $showPreview;
 

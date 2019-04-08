@@ -6,12 +6,13 @@ use Illuminate\Contracts\Validation\Rule;
 
 class ArrayRules implements Rule
 {
+
     public $rules = [];
 
     /**
      * Create a new rule instance.
      *
-     * @return void
+     * @param array $rules
      */
     public function __construct(array $rules)
     {
@@ -21,13 +22,13 @@ class ArrayRules implements Rule
     /**
      * Determine if the validation rule passes.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
+     * @param string $attribute
+     * @param mixed $value
      * @return bool
      */
-    public function passes($attribute, $value)
+    public function passes($attribute, $value) : bool
     {
-        $input = [$attribute => json_decode($value, true)];
+        $input = [$attribute => \json_decode($value, true)];
 
         $this->rules = [$attribute => $this->rules];
 
@@ -43,17 +44,20 @@ class ArrayRules implements Rule
      *
      * @return string
      */
-    public function message()
+    public function message() : string
     {
         return $this->message;
     }
 
-    public function messages($attribute)
+    /**
+     * @return array
+     */
+    public function messages() : array
     {
         return [
-            "size" => __('Select exactly') . ' :size',
-            "min" => __('Select a minimum of') . ' :min',
-            "max" => __('Select a maximum of') . ' :max',
+            'size' => __('Select exactly') . ' :size',
+            'min'  => __('Select a minimum of') . ' :min',
+            'max'  => __('Select a maximum of') . ' :max',
         ];
     }
 }

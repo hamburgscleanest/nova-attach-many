@@ -13,13 +13,13 @@ class FieldServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot() : void
     {
-        Nova::serving(function (ServingNova $event) {
+        Nova::serving(static function (ServingNova $event) {
             Nova::script('nova-attach-many', __DIR__.'/../../dist/js/field.js');
         });
 
-        $this->app->booted(function () {
+        $this->app->booted(static function () {
             \Route::middleware(['nova'])
                 ->prefix('nova-vendor/nova-attach-many')
                 ->group(__DIR__.'/../../routes/api.php');
@@ -31,7 +31,7 @@ class FieldServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register() : void
     {
         //
     }

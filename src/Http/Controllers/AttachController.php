@@ -2,20 +2,33 @@
 
 namespace NovaAttachMany\Http\Controllers;
 
-use Laravel\Nova\Resource;
 use Illuminate\Routing\Controller;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
 class AttachController extends Controller
 {
-    public function create(NovaRequest $request, $parent, $relationship)
+
+    /**
+     * @param NovaRequest $request
+     * @param $parent
+     * @param $relationship
+     * @return array
+     */
+    public function create(NovaRequest $request, $parent, $relationship) : array
     {
         return [
             'available' => $this->getAvailableResources($request, $relationship),
         ];
     }
 
-    public function edit(NovaRequest $request, $parent, $parentId, $relationship)
+    /**
+     * @param NovaRequest $request
+     * @param $parent
+     * @param $parentId
+     * @param $relationship
+     * @return array
+     */
+    public function edit(NovaRequest $request, $parent, $parentId, $relationship) : array
     {
         return [
             'selected' => $request->findResourceOrFail()->model()->{$relationship}->pluck('id'),
@@ -23,6 +36,11 @@ class AttachController extends Controller
         ];
     }
 
+    /**
+     * @param $request
+     * @param $relationship
+     * @return mixed
+     */
     public function getAvailableResources($request, $relationship)
     {
         $resourceClass = $request->newResource();
@@ -33,13 +51,11 @@ class AttachController extends Controller
             ->where('attribute', $relationship)
             ->first();
 
-        $query = $field->resourceClass::newModel();
-
-        return $field->resourceClass::relatableQuery($request, $query)->get()
+        return $field->resourceClass::relatableQuery($request, $field->resourceClass::newModel()->query())->get()
             ->mapInto($field->resourceClass)
-            ->filter(function ($resource) use ($request, $field) {
+            ->filter(static function ($resource) use ($request) {
                 return $request->newResource()->authorizedToAttach($request, $resource->resource);
-            })->map(function($resource) {
+            })->map(static function($resource) {
                 return [
                     'display' => $resource->title(),
                     'value' => $resource->getKey(),
